@@ -1,0 +1,57 @@
+{
+  "interval": {
+    "description": "截图间隔时间（秒）",
+    "type": "int",
+    "default": 1200,
+    "hint": "最小值60秒（1分钟），默认1200秒（20分钟）"
+  },
+  "quiet_time": {
+    "description": "免打扰时段 (24小时制)",
+    "type": "string",
+    "default": "0-8",
+    "hint": "格式：开始-结束，例如 0-8 表示凌晨0点到早上8点"
+  },
+  "target_umo": {
+    "description": "目标会话 UMO",
+    "type": "string",
+    "default": "",
+    "hint": "截图结果发送到此会话。使用 /sid 获取"
+  },
+  "custom_provider_id": {
+    "description": "自定义识图模型",
+    "type": "string",
+    "default": "",
+    "hint": "用于截图分析的多模态模型，留空则使用默认模型",
+    "_special": "select_provider"
+  },
+  "analysis_prompt": {
+    "description": "截图分析提示词",
+    "type": "text",
+    "default": "请用你的人格设定风格，对这张电脑屏幕截图发表感想。描述你看到了什么，并用有趣的方式评论。当前时间：{{current_time}}",
+    "hint": "指导LLM分析截图时的思考。可用占位符: {{current_time}} (当前时间), {{persona_name}} (人格名称), {{persona_prompt}} (人格提示词)"
+  },
+  "send_image": {
+    "description": "是否发送截图图片",
+    "type": "bool",
+    "default": false,
+    "hint": "关闭后只发送文字分析结果"
+  },
+  "image_max_size": {
+    "description": "截图最大尺寸（像素）",
+    "type": "int",
+    "default": 1280,
+    "hint": "截图会自动缩放到此尺寸"
+  },
+  "max_screenshots": {
+    "description": "最多保存截图张数",
+    "type": "int",
+    "default": 10,
+    "hint": "超过此数量时自动删除最早的截图"
+  },
+  "auto_start": {
+    "description": "插件启动时自动开始截图",
+    "type": "bool",
+    "default": false,
+    "hint": "开启后插件加载时自动启动定时截图任务"
+  }
+}

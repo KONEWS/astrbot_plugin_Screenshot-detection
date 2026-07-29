@@ -1,0 +1,137 @@
+<<<<<<< HEAD
+# 截图检测插件
+
+定时截图电脑屏幕，使用 AI 分析内容并推送到指定会话。
+
+## 功能特性
+
+- 定时自动截图屏幕
+- 使用 AI 分析截图内容
+- 支持推送到任意会话（私聊/群聊）
+- 自然语言触发截图
+- 延迟截图支持
+- 免打扰时段
+- 自动启动
+- 自定义分析提示词
+- 自定义识图模型
+- 自动管理截图数量
+
+## 安装
+
+1. 将插件目录放入 AstrBot 的 `data/plugins/` 目录
+2. 安装依赖：`pip install Pillow`
+3. 在 AstrBot 插件管理中启用插件
+
+## 使用方法
+
+### 自然语言触发
+
+直接发送包含以下关键词的消息：
+- "看一下我的电脑屏幕"
+- "看看电脑"
+- "查看桌面"
+
+支持延迟截图：
+- "5分钟后看一下电脑"
+- "10分钟后看看屏幕"
+
+### 命令触发
+
+| 命令 | 说明 |
+|------|------|
+| `/kan` | 立即截图分析 |
+| `/screenshot_start [时间]` | 启动定时截图 |
+| `/screenshot_stop` | 停止定时截图 |
+| `/screenshot_interval <时间>` | 设置截图间隔 |
+| `/screenshot_quiet <开始> <结束>` | 设置免打扰时段 |
+| `/screenshot_quiet off` | 关闭免打扰 |
+| `/screenshot_model [模型ID]` | 设置识图模型 |
+| `/screenshot_target <UMO>` | 设置目标会话 |
+| `/screenshot_target default` | 恢复默认目标 |
+| `/screenshot_test` | 测试发送消息 |
+| `/screenshot_status` | 查看状态 |
+
+### 时间格式
+
+支持以下格式设置间隔时间：
+- `300` - 300秒
+- `30s` - 30秒
+- `5m` - 5分钟
+- `1h` - 1小时
+
+## 插件设置
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| 截图间隔时间 | 1200秒 | 定时截图间隔，最小60秒 |
+| 免打扰时段 | 0-8 | 格式：开始-结束，如 0-8 表示凌晨0点到早上8点 |
+| 目标会话 UMO | 空 | 截图结果发送到此会话，使用 `/sid` 获取 |
+| 截图分析提示词 | 见下方 | 指导LLM分析截图 |
+| 自定义识图模型 | 空 | 用于截图分析的多模态模型 |
+| 发送截图图片 | 否 | 开启需模型支持多模态 |
+| 截图最大尺寸 | 1280 | 截图会自动缩放到此尺寸 |
+| 最多保存截图张数 | 10 | 超过自动删除最早的截图 |
+| 自动启动 | 否 | 插件加载时自动启动定时截图 |
+
+### 截图分析提示词
+
+默认提示词：
+```
+请用你的人格设定风格，对这张电脑屏幕截图发表感想。描述你看到了什么，并用有趣的方式评论。当前时间：{{current_time}}
+```
+
+可用占位符：
+- `{{current_time}}` - 当前时间
+- `{{persona_name}}` - 人格名称
+- `{{persona_prompt}}` - 人格提示词
+
+## 获取目标会话 UMO
+
+在目标会话中发送：
+```
+/sid
+```
+
+返回格式：`平台名:消息类型:会话ID`
+
+示例：`default:FriendMessage:123456789`
+
+## 截图管理
+
+- 截图自动保存到插件目录的 `screenshots` 文件夹
+- 默认最多保存 **10张** 截图
+- 超过限制时自动删除最早的截图
+- 可在插件设置中调整最大保存数量
+
+## 注意事项
+
+1. **识图模型**：使用图片模式需要支持多模态的模型（如 GPT-4o、Claude 3.5、Gemini 等）
+2. **纯文本模式**：关闭「发送截图图片」后，任何模型都可以使用
+3. **免打扰时段**：在此时间段内不会进行定时截图
+4. **自动启动**：开启后插件加载时会自动启动定时截图任务
+
+## 依赖
+
+```bash
+pip install Pillow
+```
+
+## 许可证
+
+AGPL-3.0
+=======
+# astrbot-plugin-helloworld
+
+AstrBot 插件模板 / A template plugin for AstrBot plugin feature
+
+> [!NOTE]
+> This repo is just a template of [AstrBot](https://github.com/AstrBotDevs/AstrBot) Plugin.
+> 
+> [AstrBot](https://github.com/AstrBotDevs/AstrBot) is an agentic assistant for both personal and group conversations. It can be deployed across dozens of mainstream instant messaging platforms, including QQ, Telegram, Feishu, DingTalk, Slack, LINE, Discord, Matrix, etc. In addition, it provides a reliable and extensible conversational AI infrastructure for individuals, developers, and teams. Whether you need a personal AI companion, an intelligent customer support agent, an automation assistant, or an enterprise knowledge base, AstrBot enables you to quickly build AI applications directly within your existing messaging workflows.
+
+# Supports
+
+- [AstrBot Repo](https://github.com/AstrBotDevs/AstrBot)
+- [AstrBot Plugin Development Docs (Chinese)](https://docs.astrbot.app/dev/star/plugin-new.html)
+- [AstrBot Plugin Development Docs (English)](https://docs.astrbot.app/en/dev/star/plugin-new.html)
+>>>>>>> 621c85099872cda750b3e7a03023fc64c1d8c22b
