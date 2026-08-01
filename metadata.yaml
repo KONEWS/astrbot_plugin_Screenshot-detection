@@ -1,6 +1,26 @@
-name: helloworld # 插件唯一识别名，以 astrbot_plugin_ 前缀开头
-display_name: helloworld # 用于展示的名字，可以是方便人类阅读的名字（需要版本 >= v4.5.0，低版本不会报错，请放心填写）
-desc: AstrBot 插件示例。 # 插件简短描述
-version: v1.3.0 # 插件版本号。格式：v1.1.1 或者 v1.1
-author: Soulter # 作者
-repo: https://github.com/Soulter/helloworld # 插件的仓库地址
+name: astrbot_plugin_screenshot_detection
+display_name: 截图检测
+short_desc: 定时截图屏幕，AI分析内容推送到指定会话
+desc: |
+  定时截图电脑屏幕，使用 AI 分析内容并推送到指定会话。
+
+  ## 功能特性
+  - 定时自动截图屏幕
+  - 使用 AI 分析截图内容
+  - 支持推送到任意会话
+  - 自然语言触发截图
+  - 延迟截图支持
+  - 免打扰时段
+  - 自定义分析提示词
+  - 自定义识图模型
+version: 1.13.0
+author: KONEWS
+repo: https://github.com/KONEWS/astrbot_plugin_Screenshot-detection
+astrbot_version: ">=4.17.0"
+support_platforms:
+  - aiocqhttp
+  - qq_official
+tags:
+  - screenshot
+  - ai
+  - image
