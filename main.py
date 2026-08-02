@@ -248,7 +248,7 @@ class ScreenshotDetectionPlugin(Star):
 
                 # 仅截屏模式
                 if self._screenshot_only:
-                    if self._send_image and self._target_umo:
+                    if self._target_umo:
                         try:
                             from astrbot.api.event import MessageChain
 
