@@ -68,6 +68,9 @@ class ScreenshotDetectionPlugin(Star):
         # 是否发送图片
         self._send_image: bool = config.get("send_image", False)
         
+        # 仅截屏不分析
+        self._screenshot_only: bool = config.get("screenshot_only", False)
+        
         # 截图最大尺寸
         self._image_max_size: int = config.get("image_max_size", 1280)
         
@@ -230,13 +233,26 @@ class ScreenshotDetectionPlugin(Star):
                 logger.info("正在截取屏幕...")
                 image_bytes = self._take_screenshot()
                 if not image_bytes:
-                    logger.warning("截图失败，跳过本次分析")
+                    logger.warning("截图失败")
                     continue
 
                 self._last_screenshot_time = time.time()
                 screenshot_path = self._save_screenshot(image_bytes)
                 logger.info(f"截图已保存: {screenshot_path}")
                 
+                # 仅截屏模式
+                if self._screenshot_only:
+                    if self._send_image and self._target_umo:
+                        try:
+                            from astrbot.api.event import MessageChain
+                            image_chain = MessageChain().file_image(screenshot_path)
+                            await self.context.send_message(self._target_umo, image_chain)
+                            logger.info("截图已发送")
+                        except Exception as e:
+                            logger.error(f"发送截图失败: {e}")
+                    continue
+                
+                # 分析模式
                 try:
                     analysis = await self._analyze_screenshot_auto(image_bytes)
                 except Exception as e:
@@ -403,6 +419,7 @@ class ScreenshotDetectionPlugin(Star):
             self.config["custom_provider_id"] = ""
         
         self.config["analysis_prompt"] = self._analysis_prompt
+        self.config["screenshot_only"] = self._screenshot_only
         self.config["send_image"] = self._send_image
         self.config["image_max_size"] = self._image_max_size
         self.config["max_screenshots"] = self._max_screenshots
@@ -665,10 +682,12 @@ class ScreenshotDetectionPlugin(Star):
             target_info = self._target_umo
         
         screenshot_count = self._get_screenshot_count()
+        mode_info = "仅截屏" if self._screenshot_only else "截屏+分析"
         
         yield event.plain_result(
             f"=== 截图检测状态 ===\n"
             f"状态: {status}\n"
+            f"模式: {mode_info}\n"
             f"间隔: {self._format_interval(self._interval)}\n"
             f"免打扰: {quiet_info}\n"
             f"识图模型: {model_info}\n"

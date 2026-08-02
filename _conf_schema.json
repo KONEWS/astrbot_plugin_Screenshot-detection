@@ -30,6 +30,12 @@
     "default": "请用你的人格设定风格，对这张电脑屏幕截图发表感想。描述你看到了什么，并用有趣的方式评论。当前时间：{{current_time}}",
     "hint": "指导LLM分析截图时的思考。可用占位符: {{current_time}} (当前时间), {{persona_name}} (人格名称), {{persona_prompt}} (人格提示词)"
   },
+  "screenshot_only": {
+    "description": "仅截屏不分析",
+    "type": "bool",
+    "default": false,
+    "hint": "开启后只截屏保存，不进行AI分析"
+  },
   "send_image": {
     "description": "是否发送截图图片",
     "type": "bool",
