@@ -489,7 +489,43 @@ class ScreenshotDetectionPlugin(Star):
 
     @filter.command("kan")
     async def screenshot_now(self, event: AstrMessageEvent):
-        """立即截取屏幕并分析"""
+        """立即截取屏幕，根据模式决定是否分析"""
+        if not HAS_PIL:
+            yield event.plain_result("错误: Pillow 未安装，请运行 `pip install Pillow`")
+            return
+
+        yield event.plain_result("正在截取屏幕...")
+        image_bytes = self._take_screenshot()
+        if not image_bytes:
+            yield event.plain_result("截图失败")
+            return
+
+        screenshot_path = self._save_screenshot(image_bytes)
+
+        # 仅截图模式
+        if self._screenshot_only:
+            if self._send_image:
+                yield event.image_result(screenshot_path)
+                yield event.plain_result("截图已完成")
+            else:
+                yield event.plain_result("截图已保存（未开启推送截图图片）")
+            return
+
+        # 分析模式
+        yield event.plain_result("正在分析截图...")
+        analysis = await self._analyze_screenshot(image_bytes, event)
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        result_text = f"[{timestamp}] 屏幕分析感想:\n\n{analysis}"
+
+        if self._send_image:
+            yield event.image_result(screenshot_path)
+
+        yield event.plain_result(result_text)
+
+    @filter.command("watch")
+    async def watch_screenshot(self, event: AstrMessageEvent):
+        """立即截取屏幕并分析（无视仅截图模式）"""
         if not HAS_PIL:
             yield event.plain_result("错误: Pillow 未安装，请运行 `pip install Pillow`")
             return
