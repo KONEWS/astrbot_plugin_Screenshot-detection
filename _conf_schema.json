@@ -37,10 +37,10 @@
     "hint": "开启后只截屏保存，不进行AI分析"
   },
   "send_image": {
-    "description": "是否发送截图图片",
+    "description": "推送截图图片",
     "type": "bool",
-    "default": false,
-    "hint": "关闭后只发送文字分析结果"
+    "default": true,
+    "hint": "关闭后不推送截图图片，只推送分析文字；仅截图模式下关闭也不做推送"
   },
   "image_max_size": {
     "description": "截图最大尺寸（像素）",

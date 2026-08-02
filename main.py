@@ -68,8 +68,8 @@ class ScreenshotDetectionPlugin(Star):
             "请用你的人格设定风格，对这张电脑屏幕截图发表感想。描述你看到了什么，并用有趣的方式评论。当前时间：{{current_time}}",
         )
 
-        # 是否发送图片
-        self._send_image: bool = config.get("send_image", False)
+        # 推送截图图片
+        self._send_image: bool = config.get("send_image", True)
 
         # 仅截屏不分析
         self._screenshot_only: bool = config.get("screenshot_only", False)
