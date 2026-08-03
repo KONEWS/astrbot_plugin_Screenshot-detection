@@ -5,6 +5,7 @@
 
 import asyncio
 import base64
+import hashlib
 import io
 import os
 import re
@@ -28,7 +29,7 @@ except ImportError:
     "astrbot_plugin_screenshot_detection",
     "KONEWS",
     "定时截图电脑屏幕，使用AI分析内容并推送到指定会话",
-    "v1.13.0",
+    "v1.16.0",
 )
 class ScreenshotDetectionPlugin(Star):
     """截图检测插件主类"""
@@ -39,6 +40,8 @@ class ScreenshotDetectionPlugin(Star):
         self._task: asyncio.Task | None = None
         self._running: bool = False
         self._last_screenshot_time: float = 0
+        self._last_screenshot_hash: str = ""
+        self._is_duplicate: bool = False
 
         # 从配置中读取设置
         self._interval: int = config.get("interval", 1200)
@@ -156,10 +159,22 @@ class ScreenshotDetectionPlugin(Star):
 
             buffer = io.BytesIO()
             screenshot.save(buffer, format="PNG", optimize=True)
-            return buffer.getvalue()
+            image_bytes = buffer.getvalue()
+
+            image_hash = hashlib.md5(image_bytes).hexdigest()
+            self._is_duplicate = (
+                self._last_screenshot_hash == image_hash
+            )
+            self._last_screenshot_hash = image_hash
+
+            return image_bytes
         except Exception as e:
             logger.error(f"截图失败: {e}")
             return None
+
+    async def _take_screenshot_async(self) -> bytes | None:
+        """在线程池中执行截屏，避免阻塞事件循环"""
+        return await asyncio.to_thread(self._take_screenshot)
 
     def _image_to_base64(self, image_bytes: bytes) -> str:
         """将图片字节转换为 base64 字符串"""
@@ -237,9 +252,13 @@ class ScreenshotDetectionPlugin(Star):
                     continue
 
                 logger.info("正在截取屏幕...")
-                image_bytes = self._take_screenshot()
+                image_bytes = await self._take_screenshot_async()
                 if not image_bytes:
                     logger.warning("截图失败")
+                    continue
+
+                if self._is_duplicate:
+                    logger.info("屏幕内容与上次截图相同，跳过分析")
                     continue
 
                 self._last_screenshot_time = time.time()
@@ -263,7 +282,7 @@ class ScreenshotDetectionPlugin(Star):
 
                 # 分析模式
                 try:
-                    analysis = await self._analyze_screenshot_auto(image_bytes)
+                    analysis = await self._analyze_screenshot(image_bytes)
                 except Exception as e:
                     logger.error(f"分析截图失败: {e}")
                     analysis = f"分析失败: {e!s}"
@@ -297,49 +316,15 @@ class ScreenshotDetectionPlugin(Star):
                 logger.error(f"定时任务异常: {e}")
                 await asyncio.sleep(10)
 
-    async def _analyze_screenshot_auto(self, image_bytes: bytes) -> str:
-        """自动模式下分析截图"""
-        try:
-            provider_id = self._custom_provider_id
-            if not provider_id:
-                providers = self.context.get_all_providers()
-                if providers:
-                    provider_id = providers[0].meta().id
-                else:
-                    return "错误：未配置 LLM 模型"
-
-            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            prompt = self._analysis_prompt.replace("{{current_time}}", current_time)
-
-            if self._send_image:
-                base64_str = self._image_to_base64(image_bytes)
-                image_url = f"data:image/png;base64,{base64_str}"
-                llm_resp = await self.context.llm_generate(
-                    chat_provider_id=provider_id,
-                    prompt=prompt,
-                    image_urls=[image_url],
-                )
-            else:
-                llm_resp = await self.context.llm_generate(
-                    chat_provider_id=provider_id,
-                    prompt=prompt,
-                )
-
-            return llm_resp.completion_text
-        except Exception as e:
-            logger.error(f"分析截图失败: {e}", exc_info=True)
-            return f"截图分析失败: {e!s}"
-
-    async def _get_provider_id(self, umo: str) -> str:
-        """获取 LLM 提供商 ID"""
-        if self._custom_provider_id:
-            return self._custom_provider_id
-        return await self.context.get_current_chat_provider_id(umo=umo)
-
     async def _analyze_screenshot(
-        self, image_bytes: bytes, event: AstrMessageEvent
+        self, image_bytes: bytes, event: AstrMessageEvent | None = None
     ) -> str:
-        """使用当前会话人格分析截图"""
+        """分析截图。
+
+        - 指定了自定义模型时优先使用该模型
+        - event 非空时使用当前会话的人格与模型
+        - event 为空时使用第一个可用模型
+        """
         try:
             persona = None
             if event:
@@ -352,7 +337,18 @@ class ScreenshotDetectionPlugin(Star):
                 except Exception:
                     pass
 
-            provider_id = await self._get_provider_id(event.unified_msg_origin)
+            if self._custom_provider_id:
+                provider_id = self._custom_provider_id
+            elif event:
+                provider_id = await self.context.get_current_chat_provider_id(
+                    umo=event.unified_msg_origin
+                )
+            else:
+                providers = self.context.get_all_providers()
+                if providers:
+                    provider_id = providers[0].meta().id
+                else:
+                    return "错误：未配置 LLM 模型"
 
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             prompt = self._analysis_prompt.replace("{{current_time}}", current_time)
@@ -469,7 +465,7 @@ class ScreenshotDetectionPlugin(Star):
             return
 
         yield event.plain_result("正在截取屏幕...")
-        image_bytes = self._take_screenshot()
+        image_bytes = await self._take_screenshot_async()
         if not image_bytes:
             yield event.plain_result("截图失败")
             return
@@ -495,7 +491,7 @@ class ScreenshotDetectionPlugin(Star):
             return
 
         yield event.plain_result("正在截取屏幕...")
-        image_bytes = self._take_screenshot()
+        image_bytes = await self._take_screenshot_async()
         if not image_bytes:
             yield event.plain_result("截图失败")
             return
@@ -531,7 +527,7 @@ class ScreenshotDetectionPlugin(Star):
             return
 
         yield event.plain_result("正在截取屏幕...")
-        image_bytes = self._take_screenshot()
+        image_bytes = await self._take_screenshot_async()
         if not image_bytes:
             yield event.plain_result("截图失败")
             return

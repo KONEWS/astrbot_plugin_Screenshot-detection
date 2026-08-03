@@ -13,7 +13,7 @@ desc: |
   - 免打扰时段
   - 自定义分析提示词
   - 自定义识图模型
-version: 1.15.0
+version: 1.16.0
 author: KONEWS
 repo: https://github.com/KONEWS/astrbot_plugin_Screenshot-detection
 astrbot_version: ">=4.17.0"
