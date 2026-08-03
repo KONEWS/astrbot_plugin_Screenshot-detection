@@ -31,7 +31,10 @@ screenshots/
 # 日志
 *.log
 
-# 临时文件
+# 缓存
+.ruff_cache/
+.pytest_cache/
+.coverage
 *.tmp
 *.bak
 *.cache
