@@ -120,6 +120,13 @@
 pip install Pillow
 ```
 
+## 测试
+
+```bash
+pip install pytest Pillow
+python -m pytest tests
+```
+
 ## 许可证
 
 AGPL-3.0

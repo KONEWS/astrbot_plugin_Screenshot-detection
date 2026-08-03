@@ -162,9 +162,7 @@ class ScreenshotDetectionPlugin(Star):
             image_bytes = buffer.getvalue()
 
             image_hash = hashlib.md5(image_bytes).hexdigest()
-            self._is_duplicate = (
-                self._last_screenshot_hash == image_hash
-            )
+            self._is_duplicate = self._last_screenshot_hash == image_hash
             self._last_screenshot_hash = image_hash
 
             return image_bytes
